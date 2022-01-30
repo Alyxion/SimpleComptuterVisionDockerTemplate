@@ -1,0 +1,15 @@
+flask
+flask-cors
+requests
+openpyxl
+gunicorn
+pandas
+opencv-contrib-python==4.5.1.48
+matplotlib
+shapely
+scikit-image
+redis
+healthcheck
+flask-restx
+http-constants
+werkzeug==0.16.1

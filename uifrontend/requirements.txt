@@ -1,0 +1,10 @@
+requests
+openpyxl
+pandas
+opencv-contrib-python==4.5.1.48
+matplotlib
+shapely
+scikit-image
+redis
+healthcheck
+streamlit

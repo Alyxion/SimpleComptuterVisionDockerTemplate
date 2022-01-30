@@ -1,0 +1,70 @@
+version: "3.8"
+services:
+  yourwebservice:
+    image: "yourcr.azurecr.io/services/web/mainservice"
+    build: webservice
+    ports:
+      - 5000:5000
+    container_name: yourwebservice
+    restart: unless-stopped
+    depends_on:
+      - redis
+    # TODO Remove this volume section and copy the source directly into container once ready to ship.
+    # TODO Also see webservice/Dockerfile
+    volumes:
+      - /yourlocaldata:/yourlocaldata
+      - ./webservice:/app/
+    networks:
+      - yournet
+    deploy:
+      replicas: 1
+    healthcheck:
+      test: curl --fail http://localhost:5000 || exit 1
+      interval: 2s
+      retries: 5
+      start_period: 5s
+      timeout: 10s
+  youruifrontend:
+    image: "yourcr.azurecr.io/services/web/uifrontend"
+    build: uifrontend
+    ports:
+      - 5002:5002
+    container_name: uifrontend
+    restart: unless-stopped
+    depends_on:
+      yourwebservice:
+        condition: service_healthy
+    # TODO Remove this volume section and copy the source directly into container once ready to ship.
+    # TODO Also see uifrontend/Dockerfile
+    volumes:
+      - ./uifrontend/source:/app/
+    networks:
+      - yournet
+    deploy:
+      replicas: 1
+  redis:
+    image: "yourcr.azurecr.io/services/shared/redis-db"
+    build: redis
+    container_name: yourredis
+    restart: unless-stopped
+    volumes:
+      - ./redis/redis.conf:/usr/local/etc/redis/redis.conf
+    networks:
+      - yournet
+    expose:
+      - 6379
+    ports:
+      - 6379:6379
+    deploy:
+      replicas: 1
+      resources:
+        limits:
+          cpus: 4
+    healthcheck:
+          test: ["CMD", "redis-cli", "ping"]
+          interval: 1s
+          timeout: 3s
+          retries: 30
+networks:
+  yournet:
+      name: yournet
